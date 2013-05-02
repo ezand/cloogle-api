@@ -12,7 +12,8 @@
            [java.nio.charset Charset]
            [java.io ByteArrayOutputStream]
            [com.google.api.services.picasa.model AlbumEntry PhotoDetailsFeed])
-  (:use [cloogle-api.common])
+  (:use [cloogle-api.common]
+        [clojure.java.io])
   (:require [me.raynes.fs :as fs]))
 
 (def ^:private credentials-files
@@ -41,24 +42,24 @@
 (defn set-client! [client]
   (alter-var-root (var *picasa-client*) (constantly client)))
 
-(defn- album-as-map [album-entry]
-  {:_self album-entry
-   :title (.title album-entry)
-   :feed-link (.getFeedLink album-entry)
-   :updated (.updated album-entry)
-   :summary (.summary album-entry)})
+(defn- album-as-map [album]
+  {:_self album
+   :title (.title album)
+   :feed-link (.getFeedLink album)
+   :updated (.updated album)
+   :summary (.summary album)})
 
-(defn- photo-as-map [photo-entry]
-  (let [content (-> photo-entry
+(defn- photo-as-map [photo]
+  (let [content (-> photo
                   (.mediaGroup)
                   (.content))]
-    {:_self photo-entry
-     :title (.title photo-entry)
+    {:_self photo
+     :title (.title photo)
      :type (.type content)
      :url (.url content)
-     :updated (.updated photo-entry)
-     :summary (.summary photo-entry)
-     :feed-link (.getFeedLink photo-entry)}))
+     :updated (.updated photo)
+     :summary (.summary photo)
+     :feed-link (.getFeedLink photo)}))
 
 (defn- photo-details-as-map [photo-details]
   (let [content (-> photo-details
@@ -74,8 +75,12 @@
      :type (.type content)
      :url (.url content)}))
 
+(defn login [app-name]
+  (let [template (slurp (load-resource "clients_secret_template.json"))]
+    (let [client_secrets (format template (*properties* :client-id ) (*properties* :client-secret ))]
+      (set-client! (picasa-client app-name (string-input-stream (str client_secrets)))))))
+
 (defn albums []
-  (set-client! (picasa-client "GOOGLE SYNC" (load-resource "clients_secret.json")))
   (let [user-feed (.executeGetUserFeed *picasa-client* (PicasaUrl/relativeToRoot "feed/api/user/default"))]
     (map album-as-map (vec (.albums user-feed)))))
 

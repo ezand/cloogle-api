@@ -7,6 +7,7 @@
   :test-paths ["src/test/clojure"]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [me.raynes/fs "1.4.2"]
+                 [org.clojure/data.json "0.2.2"]
                  [com.google.api-client/google-api-client "1.14.1-beta"]
                  [com.google.api-client/google-api-client-extensions "1.6.0-beta"]
                  [com.google.http-client/google-http-client-jackson2 "1.14.1-beta"]
