@@ -1,5 +1,5 @@
 (ns cloogle-api.picasa
-  (:import [com.google.api.services.picasa.model PhotoDetailsFeed])
+  (:import [com.google.api.services.picasa.model PhotoDetailsFeed UserFeed])
   (:import [com.google.api.services.picasa PicasaClient]
            [com.google.api.client.auth.oauth2 Credential]
            [com.google.api.services.picasa PicasaUrl]
@@ -17,16 +17,15 @@
   (:require [me.raynes.fs :as fs]))
 
 (def ^:private credentials-files
-  (fs/file (System/getProperty "user.home") ".credentials/picasa.json"))
-
-(defn- init-credentials []
-  (fs/mkdirs (.getParentFile credentials-files))
-  (fs/create credentials-files))
+  (let [file (fs/file (str (System/getProperty "user.home") "/.credentials/picasa.json"))]
+    (if-not (fs/file? file) (fs/mkdirs (.getParentFile file)))
+    (spit file "{}\n\n")
+    file))
 
 (declare ^:dynamic ^PicasaClient *picasa-client*)
+(declare ^:dynamic ^UserFeed *user-feed*)
 
 (defn picasa-client [name client-secret]
-  (init-credentials)
   (let [http-transport (GoogleNetHttpTransport/newTrustedTransport)
         json-factory (JacksonFactory.)
         secrets (GoogleClientSecrets/load json-factory client-secret)
@@ -44,6 +43,7 @@
 
 (defn- album-as-map [album]
   {:_self album
+   :access (.access album)
    :title (.title album)
    :feed-link (.getFeedLink album)
    :updated (.updated album)
@@ -75,14 +75,24 @@
      :type (.type content)
      :url (.url content)}))
 
+(defn map-as-album [album-map]
+  (let [album (AlbumEntry.)]
+    (set! (. album access) (:access album-map))
+    (set! (. album title) (:title album-map))
+    (set! (. album summary) (:summary album-map))
+    album))
+
 (defn login [app-name]
   (let [template (slurp (load-resource "clients_secret_template.json"))]
-    (let [client_secrets (format template (*properties* :client-id ) (*properties* :client-secret ))]
-      (set-client! (picasa-client app-name (string-input-stream (str client_secrets)))))))
+    (let [client_secrets (format template (:client-id *properties*) (:client-secret *properties*))]
+      (set-client! (picasa-client app-name (string-input-stream (str client_secrets))))
+      (alter-var-root (var *user-feed*) (constantly (.executeGetUserFeed *picasa-client* (PicasaUrl/relativeToRoot "feed/api/user/default")))))))
+
+(defn create-album [album]
+  (.executeInsert *picasa-client* *user-feed* (map-as-album album)))
 
 (defn albums []
-  (let [user-feed (.executeGetUserFeed *picasa-client* (PicasaUrl/relativeToRoot "feed/api/user/default"))]
-    (map album-as-map (vec (.albums user-feed)))))
+  (map album-as-map (vec (.albums *user-feed*))))
 
 (defn photos [{:keys [feed-link]}]
   (let [album-feed (.executeGetAlbumFeed *picasa-client* (PicasaUrl. feed-link))]
