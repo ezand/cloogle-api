@@ -1,8 +1,9 @@
 (ns cloogle-api.picasa
-  (:import [com.google.api.services.picasa.model PhotoDetailsFeed UserFeed])
-  (:import [com.google.api.services.picasa PicasaClient]
-           [com.google.api.client.auth.oauth2 Credential]
+  (:import [com.google.api.services.picasa.model PhotoDetailsFeed UserFeed]
+           [com.google.api.services.picasa PicasaClient]
            [com.google.api.services.picasa PicasaUrl]
+           [com.google.api.client.http FileContent InputStreamContent]
+           [com.google.api.client.auth.oauth2 Credential]
            [com.google.api.client.extensions.java6.auth.oauth2 AuthorizationCodeInstalledApp FileCredentialStore]
            [com.google.api.client.extensions.jetty.auth.oauth2 LocalServerReceiver]
            [com.google.api.client.googleapis.auth.oauth2 GoogleClientSecrets GoogleAuthorizationCodeFlow GoogleAuthorizationCodeFlow$Builder]
@@ -11,10 +12,11 @@
            [java.util Date]
            [java.nio.charset Charset]
            [java.io ByteArrayOutputStream]
-           [com.google.api.services.picasa.model AlbumEntry PhotoDetailsFeed])
-  (:use [cloogle-api.common]
-        [clojure.java.io])
-  (:require [me.raynes.fs :as fs]))
+           [com.google.api.services.picasa.model AlbumEntry PhotoEntry PhotoDetailsFeed]
+           [java.net URL])
+  (:use [cloogle-api.common])
+  (:require [me.raynes.fs :as fs]
+            [clojure.java.io :as io]))
 
 (def ^:private credentials-files
   (let [file (fs/file (str (System/getProperty "user.home") "/.credentials/picasa.json"))]
@@ -25,7 +27,7 @@
 (declare ^:dynamic ^PicasaClient *picasa-client*)
 (declare ^:dynamic ^UserFeed *user-feed*)
 
-(defn picasa-client [name client-secret]
+(defn- picasa-client [name client-secret]
   (let [http-transport (GoogleNetHttpTransport/newTrustedTransport)
         json-factory (JacksonFactory.)
         secrets (GoogleClientSecrets/load json-factory client-secret)
@@ -38,7 +40,7 @@
     (.setApplicationName client name)
     client))
 
-(defn set-client! [client]
+(defn- set-client! [client]
   (alter-var-root (var *picasa-client*) (constantly client)))
 
 (defn- album-as-map [album]
@@ -75,7 +77,7 @@
      :type (.type content)
      :url (.url content)}))
 
-(defn map-as-album [album-map]
+(defn- map-as-album [album-map]
   (let [album (AlbumEntry.)]
     (set! (. album access) (:access album-map))
     (set! (. album title) (:title album-map))
@@ -89,7 +91,12 @@
       (alter-var-root (var *user-feed*) (constantly (.executeGetUserFeed *picasa-client* (PicasaUrl/relativeToRoot "feed/api/user/default")))))))
 
 (defn create-album [album]
-  (.executeInsert *picasa-client* *user-feed* (map-as-album album)))
+  (album-as-map (.executeInsert *picasa-client* *user-feed* (map-as-album album))))
+
+(defn post-photo [album photo-url]
+  ; TODO support more content types
+  (let [content (InputStreamContent. "image/jpeg" (io/input-stream photo-url))]
+    (photo-as-map (.executeInsertPhotoEntry *picasa-client* (PicasaUrl. (:feed-link album)) content (last (clojure.string/split photo-url #"/"))))))
 
 (defn albums []
   (map album-as-map (vec (.albums *user-feed*))))
