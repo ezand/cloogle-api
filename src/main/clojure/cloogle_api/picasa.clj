@@ -90,13 +90,21 @@
       (set-client! (picasa-client app-name (string-input-stream (str client_secrets))))
       (alter-var-root (var *user-feed*) (constantly (.executeGetUserFeed *picasa-client* (PicasaUrl/relativeToRoot "feed/api/user/default")))))))
 
-(defn create-album [album]
+(defn create-album! [album]
   (album-as-map (.executeInsert *picasa-client* *user-feed* (map-as-album album))))
 
-(defn post-photo [album photo-url]
+(defn post-photo! [album photo-url]
   ; TODO support more content types
   (let [content (InputStreamContent. "image/jpeg" (io/input-stream photo-url))]
     (photo-as-map (.executeInsertPhotoEntry *picasa-client* (PicasaUrl. (:feed-link album)) content (last (clojure.string/split photo-url #"/"))))))
+
+; TODO make generic to handle both photo and video
+(defn upload-photo! [album file]
+  (let [file-content (FileContent. "image/jpeg" file)]
+    (let [photo (PhotoEntry.)]
+      (set! (. photo title) (.getName file))
+      (set! (. photo summary) "Test")
+      (photo-as-map (.executeInsertPhotoEntryWithMetadata *picasa-client* photo (PicasaUrl. (:feed-link album)) file-content)))))
 
 (defn albums []
   (map album-as-map (vec (.albums *user-feed*))))

@@ -5,6 +5,7 @@ clooge-api is a Clojure wrapper for the Google API.
 * Picasa Web Albums
     * List albums
     * List photos in an album
-    * List details of a photo
+    * Show photo details
     * Create albums
-    * Post a photo from an URL
+    * Post photos from URL
+    * Upload photos
