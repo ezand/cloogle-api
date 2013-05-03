@@ -20,9 +20,11 @@
 
 (def ^:private credentials-files
   (let [file (fs/file (str (System/getProperty "user.home") "/.credentials/picasa.json"))]
-    (if-not (fs/file? file) (fs/mkdirs (.getParentFile file)))
-    (spit file "{}\n\n")
-    file))
+    (if-not (fs/file? file)
+      (do
+        (fs/mkdirs (.getParentFile file))
+        (spit file "{}\n\n"))
+      file)))
 
 (declare ^:dynamic ^PicasaClient *picasa-client*)
 (declare ^:dynamic ^UserFeed *user-feed*)
