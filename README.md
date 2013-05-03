@@ -7,3 +7,4 @@ clooge-api is a Clojure wrapper for the Google API.
     * List photos in an album
     * List details of a photo
     * Create albums
+    * Post a photo from an URL
