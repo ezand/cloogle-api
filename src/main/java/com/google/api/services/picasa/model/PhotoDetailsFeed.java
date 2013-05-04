@@ -15,8 +15,8 @@ public class PhotoDetailsFeed extends Feed {
     @Key
     public String title;
 
-    @Key
-    public String subtitle;
+    @Key("subtitle")
+    public String summary;
 
     @Key
     public String icon;

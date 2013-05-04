@@ -1,5 +1,5 @@
 (ns cloogle-api.picasa
-  (:import [com.google.api.services.picasa.model PhotoDetailsFeed UserFeed]
+  (:import [com.google.api.services.picasa.model PhotoDetailsFeed UserFeed Entry]
            [com.google.api.services.picasa PicasaClient]
            [com.google.api.services.picasa PicasaUrl]
            [com.google.api.client.http FileContent InputStreamContent]
@@ -45,25 +45,36 @@
 (defn- set-client! [client]
   (alter-var-root (var *picasa-client*) (constantly client)))
 
+(defn- link-as-map [link]
+  {:href (.href link)
+   :rel (.rel link)})
+
+(defn- category-as-map [category]
+  {:scheme (.scheme category)
+   :term (.scheme category)})
+
+(defn- entry-as-map [entry]
+  {:title (.title entry)
+   :feed-link (.getFeedLink entry)
+   :updated (.updated entry)
+   :summary (.summary entry)
+   :category (category-as-map (.category entry))
+   :links (map link-as-map (.links entry))})
+
 (defn- album-as-map [album]
-  {:_self album
-   :access (.access album)
-   :title (.title album)
-   :feed-link (.getFeedLink album)
-   :updated (.updated album)
-   :summary (.summary album)})
+  (merge {:_self album
+          :access (.access album)
+          :photo-count (.numPhotos album)}
+    (entry-as-map album)))
 
 (defn- photo-as-map [photo]
   (let [content (-> photo
                   (.mediaGroup)
                   (.content))]
-    {:_self photo
-     :title (.title photo)
-     :type (.type content)
-     :url (.url content)
-     :updated (.updated photo)
-     :summary (.summary photo)
-     :feed-link (.getFeedLink photo)}))
+    (merge {:_self photo
+            :type (.type content)
+            :url (.url content)}
+      (entry-as-map photo))))
 
 (defn- photo-details-as-map [photo-details]
   (let [content (-> photo-details
@@ -73,7 +84,7 @@
      :id (.id photo-details)
      :album-id (.albumId photo-details)
      :title (.title photo-details)
-     :subtitle (.subtitle photo-details)
+     :summary (.summary photo-details)
      :icon (.icon photo-details)
      :updated (.updated photo-details)
      :type (.type content)
@@ -106,6 +117,10 @@
           (do
             (set! (. entry summary) (:summary meta-data))))
         (photo-as-map (.executeInsertPhotoEntryWithMetadata *picasa-client* entry (PicasaUrl. (:feed-link album)) file-content))))))
+
+(defn delete! [entry]
+  "Delete album, photo or video"
+  (.executeDelete *picasa-client* entry))
 
 (defn albums []
   (map album-as-map (vec (.albums *user-feed*))))
