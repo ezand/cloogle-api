@@ -10,4 +10,4 @@ clooge-api is a Clojure wrapper for the Google API.
     * Upload photos
 
 ## Requirements: ##
-    * [mime-detector](https://github.com/ezand/mime-detector)
+* [mime-detector](https://github.com/ezand/mime-detector)
