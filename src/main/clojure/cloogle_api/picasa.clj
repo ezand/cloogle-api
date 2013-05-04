@@ -95,18 +95,17 @@
 (defn create-album! [album]
   (album-as-map (.executeInsert *picasa-client* *user-feed* (map-as-album album))))
 
-(defn post-photo! [album photo-url]
-  ; TODO support more content types
-  (let [content (InputStreamContent. "image/jpeg" (io/input-stream photo-url))]
-    (photo-as-map (.executeInsertPhotoEntry *picasa-client* (PicasaUrl. (:feed-link album)) content (last (clojure.string/split photo-url #"/"))))))
-
-; TODO make generic to handle both photo and video
-(defn upload-photo! [album file]
-  (let [file-content (FileContent. "image/jpeg" file)]
-    (let [photo (PhotoEntry.)]
-      (set! (. photo title) (.getName file))
-      (set! (. photo summary) "Test")
-      (photo-as-map (.executeInsertPhotoEntryWithMetadata *picasa-client* photo (PicasaUrl. (:feed-link album)) file-content)))))
+(defn upload-media!
+  "Upload videos and photos to a Picasa album with optional meta data"
+  ([album file] (upload-media! album file nil))
+  ([album file meta-data]
+    (let [file-content (FileContent. (mime-type file) file)]
+      (let [entry (PhotoEntry.)]
+        (set! (. entry title) (.getName file))
+        (if-not (nil? meta-data)
+          (do
+            (set! (. entry summary) (:summary meta-data))))
+        (photo-as-map (.executeInsertPhotoEntryWithMetadata *picasa-client* entry (PicasaUrl. (:feed-link album)) file-content))))))
 
 (defn albums []
   (map album-as-map (vec (.albums *user-feed*))))

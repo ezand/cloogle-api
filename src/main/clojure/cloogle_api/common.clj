@@ -2,7 +2,8 @@
   (:require [clojure.data.json :as json]
             [me.raynes.fs :as fs])
   (:use [clojure.java.io])
-  (:import [java.io ByteArrayInputStream]))
+  (:import [java.io ByteArrayInputStream]
+           [java.nio.file Files Paths]))
 
 (declare ^:dynamic *properties*)
 
@@ -19,3 +20,6 @@
 (defn string-input-stream [#^String s]
   "Returns a ByteArrayInputStream for the given String."
   (ByteArrayInputStream. (.getBytes s)))
+
+(defn mime-type [file]
+  (Files/probeContentType (Paths/get (.toURI file))))

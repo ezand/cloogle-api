@@ -12,5 +12,6 @@
                  [com.google.api-client/google-api-client-extensions "1.6.0-beta"]
                  [com.google.http-client/google-http-client-jackson2 "1.14.1-beta"]
                  [com.google.oauth-client/google-oauth-client-java7 "1.14.1-beta"]
-                 [com.google.oauth-client/google-oauth-client-jetty "1.14.1-beta"]]
+                 [com.google.oauth-client/google-oauth-client-jetty "1.14.1-beta"]
+                 [no.ezand/mime-detector "1.0"]]
   :main cloogle-api.core)
