@@ -23,6 +23,21 @@ import java.util.List;
  */
 public class UserFeed extends Feed {
 
-  @Key("entry")
-  public List<AlbumEntry> albums;
+    @Key("gphoto:thumbnail")
+    public String thumbnail;
+
+    @Key("openSearch:totalResults")
+    public int totalResults;
+
+    @Key
+    public String updated;
+
+    @Key
+    public String title;
+
+    @Key("subtitle")
+    public String summary;
+
+    @Key("entry")
+    public List<AlbumEntry> albums;
 }

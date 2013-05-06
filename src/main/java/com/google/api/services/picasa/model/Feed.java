@@ -23,20 +23,23 @@ import java.util.List;
  */
 public class Feed {
 
-  @Key
-  public Author author;
+    @Key("@gd:etag")
+    public String etag;
 
-  @Key("openSearch:totalResults")
-  public int totalResults;
+    @Key
+    public Author author;
 
-  @Key("link")
-  public List<Link> links;
+    @Key("openSearch:totalResults")
+    public int totalResults;
 
-  public String getPostLink() {
-    return Link.find(links, "http://schemas.google.com/g/2005#post");
-  }
+    @Key("link")
+    public List<Link> links;
 
-  public String getNextLink() {
-    return Link.find(links, "next");
-  }
+    public String getPostLink() {
+        return Link.find(links, "http://schemas.google.com/g/2005#post");
+    }
+
+    public String getNextLink() {
+        return Link.find(links, "next");
+    }
 }

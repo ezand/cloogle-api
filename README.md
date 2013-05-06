@@ -8,8 +8,6 @@ clooge-api is a Clojure wrapper for the Google API.
     * Show album photo or video details
     * Create albums
     * Upload photo or video
-    * Delete album
-    * Delete photo or video
 
 ## Requirements: ##
 * [mime-detector](https://github.com/ezand/mime-detector)

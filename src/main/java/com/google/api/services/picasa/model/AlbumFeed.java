@@ -24,6 +24,6 @@ import java.util.List;
  */
 public class AlbumFeed extends Feed {
 
-  @Key("entry")
-  public List<PhotoEntry> photos;
+    @Key("entry")
+    public List<PhotoEntry> photos;
 }
