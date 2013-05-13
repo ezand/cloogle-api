@@ -1,4 +1,7 @@
 # cloogle-api #
+
+![Build Status](https://travis-ci.org/ezand/cloogle-api.png?branch=master)
+
 clooge-api is a Clojure wrapper for the Google API.
 
 ## Currently suppored features: ##
