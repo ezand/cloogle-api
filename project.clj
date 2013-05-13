@@ -1,6 +1,7 @@
 (defproject org.clojars.ezand/cloogle-api "1.0.0"
   :description "Clojure wrapper for Google API"
   :url "http://github.com/ezand/cloogle-api"
+  :repositories [["ezand-repo" "https://raw.github.com/ezand/ezand-maven-repo/master/releases"]]
   :java-source-paths ["src/main/java"]
   :source-paths ["src/main/clojure"]
   :resource-paths ["src/main/resources"]
