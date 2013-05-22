@@ -1,4 +1,4 @@
-(defproject org.clojars.ezand/cloogle-api "1.0.0"
+(defproject org.clojars.ezand/cloogle-api "1.0.1"
   :description "Clojure wrapper for Google API"
   :url "http://github.com/ezand/cloogle-api"
   :java-source-paths ["src/main/java"]
