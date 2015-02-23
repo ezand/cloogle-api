@@ -15,3 +15,6 @@ clooge-api is a Clojure wrapper for the Google API.
 ## Requirements: ##
 * [mime-detector](https://github.com/ezand/mime-detector)
 * [fs](https://github.com/Raynes/fs)
+
+## Usage: ##
+In your `project.clj` file, just add `[org.clojars.ezand/cloogle-api "1.0.1"]` under the `:dependencies` vector.
